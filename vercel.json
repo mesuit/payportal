@@ -13,7 +13,13 @@
     },
     {
       "src": "/(.*)",
-      "dest": "public/$1"
+      "dest": "/$1",
+      "check": true
+    },
+    {
+      "src": "/(.*)",
+      "status": 404,
+      "dest": "server.js"
     }
   ]
 }
