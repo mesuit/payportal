@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Makamesco Secure Checkout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center text-blue-600">Secure Checkout</h2>
+        
+        <div class="space-y-4">
+            <input id="amount" type="number" placeholder="Amount (KES)" class="w-full p-3 border rounded">
+            <input id="phone" type="text" placeholder="Phone (2547...)" class="w-full p-3 border rounded">
+            
+            <hr class="my-6">
+
+            <button onclick="payMpesa()" id="mpesaBtn" class="w-full bg-green-500 text-white font-bold py-3 rounded hover:bg-green-600 transition">
+                Pay via M-PESA STK
+            </button>
+
+            <div class="text-center text-gray-500 text-sm py-2">OR</div>
+
+            <div id="paypal-button-container"></div>
+        </div>
+    </div>
+
+    <script>
+        async function payMpesa() {
+            const amount = document.getElementById('amount').value;
+            const phone = document.getElementById('phone').value;
+            
+            const btn = document.getElementById('mpesaBtn');
+            btn.innerText = "Processing...";
+
+            const res = await fetch('/api/stk-push', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, phone })
+            });
+
+            const data = await res.json();
+            alert(data.status === "Success" ? "Check your phone for M-Pesa PIN prompt!" : "Error: " + data.message);
+            btn.innerText = "Pay via M-PESA STK";
+        }
+
+        // PayPal Integration
+        paypal.Buttons({
+            createOrder: (data, actions) => {
+                return actions.order.create({
+                    purchase_units: [{ amount: { value: '10.00' } }] // Convert KES to USD here
+                });
+            },
+            onApprove: (data, actions) => {
+                return actions.order.capture().then(details => {
+                    alert('Transaction completed by ' + details.payer.name.given_name);
+                });
+            }
+        }).render('#paypal-button-container');
+    </script>
+</body>
+</html>
