@@ -1,15 +1,13 @@
 const axios = require('axios');
 
 export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'Method Not Allowed' });
-    }
+    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
     let { amount, phone } = req.body;
 
-    // Format phone
+    // Fix phone format (07... -> 2547...)
     if (phone.startsWith('0')) phone = '254' + phone.slice(1);
-    phone = phone.replace(/\D/g, ''); // Remove any non-digits
+    phone = phone.replace(/\D/g, ''); 
 
     try {
         const response = await axios.post('https://backend.payhero.co.ke/api/v2/payments/external/stk', {
@@ -25,12 +23,11 @@ export default async function handler(req, res) {
             }
         });
 
-        return res.status(200).json(response.data);
+        res.status(200).json(response.data);
     } catch (error) {
-        console.error("Payhero Error:", error.response?.data || error.message);
-        return res.status(500).json({ 
+        res.status(500).json({ 
             status: "Error", 
-            message: error.response?.data?.message || "Check Vercel Logs for details" 
+            message: error.response?.data?.message || "Payhero API unreachable" 
         });
     }
 }
