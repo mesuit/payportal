@@ -1,0 +1,17 @@
+{
+  "name": "makamesco-payment-portal",
+  "version": "1.0.0",
+  "description": "Live Payment Gateway for M-Pesa, Card, and PayPal via Payhero",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  },
+  "author": "Makamesco",
+  "license": "MIT"
+}
