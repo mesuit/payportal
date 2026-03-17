@@ -23,25 +23,36 @@ const CHANNEL_ID = process.env.PAYHERO_CHANNEL_ID;
 
 // M-PESA STK PUSH
 app.post('/api/stk-push', async (req, res) => {
-    const { amount, phone } = req.body;
-    
+    let { amount, phone } = req.body;
+
+    // Auto-format phone to 2547XXXXXXXX
+    if (phone.startsWith('0')) phone = '254' + phone.slice(1);
+    if (phone.startsWith('+')) phone = phone.slice(1);
+
     try {
         const response = await axios.post('https://backend.payhero.co.ke/api/v2/payments/external/stk', {
             amount: amount,
             phone_number: phone,
-            channel_id: CHANNEL_ID,
+            channel_id: process.env.PAYHERO_CHANNEL_ID,
             external_reference: "Maka_" + Date.now(),
-            callback_url: "https://paymaka-ke86v7l9j-mesuits-projects.vercel.app/api/callback" // UPDATE THIS to your live URL
+            callback_url: "https://paymaka.vercel.app/api/callback" 
         }, {
             headers: { 
-                'Authorization': PAYHERO_AUTH,
+                'Authorization': process.env.PAYHERO_BASIC_AUTH,
                 'Content-Type': 'application/json'
             }
         });
+
         res.json(response.data);
     } catch (error) {
-        console.error("STK Error:", error.response?.data || error.message);
-        res.status(500).json({ error: "STK Push Failed" });
+        // This log will appear in your server terminal/GitHub Action logs
+        const errorData = error.response?.data;
+        console.error("❌ Payhero API Error:", errorData || error.message);
+        
+        res.status(500).json({ 
+            status: "Error", 
+            message: errorData?.message || "Internal Server Error" 
+        });
     }
 });
 
